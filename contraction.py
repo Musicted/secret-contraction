@@ -20,7 +20,8 @@ def search_with_prefix_len(prefix_len, word, list, list_reverse):
   prefix_words = []
   
   while index < len(list) and list[index][:prefix_len] == prefix:
-    prefix_words.append(list[index])
+    if list[index][:len(word)] != word:
+      prefix_words.append(list[index])
     index += 1
   
   if prefix_words == []:
