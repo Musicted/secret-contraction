@@ -1,5 +1,5 @@
 from bisect import bisect_left
-import sys
+import argparse, random
 
 def prepare_lists(path):
   with open(path) as f:
@@ -42,26 +42,26 @@ def find_suffix_words(suffix_reverse, list_reverse):
   return suffix_words
   
 if __name__ == '__main__':
-  print(len(sys.argv))
-  if len(sys.argv) != 3 and len(sys.argv) != 5:
-    print("Usage:\tpython contraction.py word wordlist [min] [max]")
-    print("\tmin and max specify minimum and maximum prefix length, respectively")
-    exit(0)
+  parser = argparse.ArgumentParser(description = 'For a given string and word list, finds pairs of words from the list that the given string could be a contraction of.')
+  parser.add_argument('string')
+  parser.add_argument('-l', '--list', default='sowpods.txt', help='Word list')
+  parser.add_argument('-b', '--bounds', nargs=2, default=[1, 32], type=int, help='Minimum and maximum prefix length', metavar=('MIN','MAX'))
+  parser.add_argument('-w', '--write', action='store_true', help='Write all solutions to an output file')
+  parser.add_argument('-n', '--num', type=int, default=1, help='Number of solutions to be printed to the console; invalidated by -w')
+  args = parser.parse_args()
   
-  word = sys.argv[1]
-  path = sys.argv[2]
+  l, l_reverse = prepare_lists(args.list)
   
-  min_prefix_len = 3
-  max_prefix_len = 6
+  result = search(args.string, l, l_reverse, args.bounds[0], args.bounds[1])
   
-  if len(sys.argv) == 5:
-    min_prefix_len = int(sys.argv[3])
-    max_prefix_len = int(sys.argv[4])
-  
-  l, l_reverse = prepare_lists(path)
-  
-  result = search(word, l, l_reverse, min_prefix_len, max_prefix_len)
-  
-  with open("out_" + word + ".txt", "w") as f:
-    for pair in result:
-      f.write(pair[0] + " " + pair[1] + "\n")
+  if args.write:
+    with open("out_%s.txt" % args.string, "w") as f:
+      for pair in result:
+        f.write(pair[0] + " " + pair[1] + "\n")
+    print("Wrote %d pairs to out_%s.txt" % (len(result), args.string) )
+  else:
+    for _ in range(args.num):
+      i = random.randrange(len(result))
+      pair = result[i]
+      print(pair[0], pair[1])
+      del(result[i])
